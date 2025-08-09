@@ -1,0 +1,146 @@
+Device detected: cuda
+loading feature files...
+success
+creating datasets
+   Train: 5946 samples, (70.0%)
+   Val : 850 samples, (10.0%)
+   Test: 1700 samples, (20.0%)
+Training start
+Epoch 1/60: Train Loss: 1.8457, Val Loss: 1.6730, Train Acc: 0.2947, Val Acc: 0.3871
+model saved to: saved_models\cnn_gru_model_20250809_163418_best.pth
+New best Val Loss: 1.6730 (Val Acc: 0.3871)
+Epoch 2/60: Train Loss: 1.6784, Val Loss: 1.5887, Train Acc: 0.3695, Val Acc: 0.4082
+model saved to: saved_models\cnn_gru_model_20250809_163418_best.pth
+New best Val Loss: 1.5887 (Val Acc: 0.4082)
+Epoch 3/60: Train Loss: 1.5949, Val Loss: 1.4824, Train Acc: 0.4154, Val Acc: 0.4565
+model saved to: saved_models\cnn_gru_model_20250809_163418_best.pth
+New best Val Loss: 1.4824 (Val Acc: 0.4565)
+Epoch 4/60: Train Loss: 1.5651, Val Loss: 1.4330, Train Acc: 0.4344, Val Acc: 0.4953
+model saved to: saved_models\cnn_gru_model_20250809_163418_best.pth
+New best Val Loss: 1.4330 (Val Acc: 0.4953)
+Epoch 5/60: Train Loss: 1.5148, Val Loss: 1.4714, Train Acc: 0.4564, Val Acc: 0.4553
+patience: 1/10
+Epoch 6/60: Train Loss: 1.4868, Val Loss: 1.4278, Train Acc: 0.4771, Val Acc: 0.4894
+patience: 2/10
+Epoch 7/60: Train Loss: 1.4570, Val Loss: 1.3798, Train Acc: 0.4934, Val Acc: 0.5082
+model saved to: saved_models\cnn_gru_model_20250809_163418_best.pth
+New best Val Loss: 1.3798 (Val Acc: 0.5082)
+Epoch 8/60: Train Loss: 1.4383, Val Loss: 1.3682, Train Acc: 0.4987, Val Acc: 0.5224
+model saved to: saved_models\cnn_gru_model_20250809_163418_best.pth
+New best Val Loss: 1.3682 (Val Acc: 0.5224)
+Epoch 9/60: Train Loss: 1.3997, Val Loss: 1.3721, Train Acc: 0.5135, Val Acc: 0.5153
+patience: 1/10
+Epoch 10/60: Train Loss: 1.4013, Val Loss: 1.4213, Train Acc: 0.5121, Val Acc: 0.4965
+patience: 2/10
+model saved to: saved_models\cnn_gru_model_20250809_163418_epoch_10.pth
+Epoch 11/60: Train Loss: 1.3807, Val Loss: 1.3422, Train Acc: 0.5215, Val Acc: 0.5212
+model saved to: saved_models\cnn_gru_model_20250809_163418_best.pth
+New best Val Loss: 1.3422 (Val Acc: 0.5212)
+Epoch 12/60: Train Loss: 1.3695, Val Loss: 1.3629, Train Acc: 0.5298, Val Acc: 0.5000
+patience: 1/10
+Epoch 13/60: Train Loss: 1.3448, Val Loss: 1.3096, Train Acc: 0.5357, Val Acc: 0.5412
+model saved to: saved_models\cnn_gru_model_20250809_163418_best.pth
+New best Val Loss: 1.3096 (Val Acc: 0.5412)
+Epoch 14/60: Train Loss: 1.3539, Val Loss: 1.3159, Train Acc: 0.5330, Val Acc: 0.5318
+patience: 1/10
+Epoch 15/60: Train Loss: 1.3348, Val Loss: 1.2947, Train Acc: 0.5368, Val Acc: 0.5518
+model saved to: saved_models\cnn_gru_model_20250809_163418_best.pth
+New best Val Loss: 1.2947 (Val Acc: 0.5518)
+Epoch 16/60: Train Loss: 1.3176, Val Loss: 1.2887, Train Acc: 0.5451, Val Acc: 0.5459
+patience: 1/10
+Epoch 17/60: Train Loss: 1.3096, Val Loss: 1.2663, Train Acc: 0.5449, Val Acc: 0.5412
+model saved to: saved_models\cnn_gru_model_20250809_163418_best.pth
+New best Val Loss: 1.2663 (Val Acc: 0.5412)
+Epoch 18/60: Train Loss: 1.3121, Val Loss: 1.3481, Train Acc: 0.5464, Val Acc: 0.5282
+patience: 1/10
+Epoch 19/60: Train Loss: 1.2941, Val Loss: 1.2655, Train Acc: 0.5632, Val Acc: 0.5706
+patience: 2/10
+Epoch 20/60: Train Loss: 1.2766, Val Loss: 1.2524, Train Acc: 0.5599, Val Acc: 0.5612
+model saved to: saved_models\cnn_gru_model_20250809_163418_best.pth
+New best Val Loss: 1.2524 (Val Acc: 0.5612)
+model saved to: saved_models\cnn_gru_model_20250809_163418_epoch_20.pth
+Epoch 21/60: Train Loss: 1.2631, Val Loss: 1.2780, Train Acc: 0.5764, Val Acc: 0.5553
+patience: 1/10
+Epoch 22/60: Train Loss: 1.2655, Val Loss: 1.2720, Train Acc: 0.5639, Val Acc: 0.5588
+patience: 2/10
+Epoch 23/60: Train Loss: 1.2649, Val Loss: 1.2888, Train Acc: 0.5632, Val Acc: 0.5529
+patience: 3/10
+Epoch 24/60: Train Loss: 1.2440, Val Loss: 1.2864, Train Acc: 0.5750, Val Acc: 0.5412
+patience: 4/10
+Epoch 25/60: Train Loss: 1.2408, Val Loss: 1.2481, Train Acc: 0.5822, Val Acc: 0.5647
+patience: 5/10
+Epoch 26/60: Train Loss: 1.1931, Val Loss: 1.1972, Train Acc: 0.5994, Val Acc: 0.5976
+model saved to: saved_models\cnn_gru_model_20250809_163418_best.pth
+New best Val Loss: 1.1972 (Val Acc: 0.5976)
+Epoch 27/60: Train Loss: 1.1750, Val Loss: 1.1975, Train Acc: 0.6034, Val Acc: 0.5882
+patience: 1/10
+Epoch 28/60: Train Loss: 1.1608, Val Loss: 1.1868, Train Acc: 0.6102, Val Acc: 0.5988
+model saved to: saved_models\cnn_gru_model_20250809_163418_best.pth
+New best Val Loss: 1.1868 (Val Acc: 0.5988)
+Epoch 29/60: Train Loss: 1.1654, Val Loss: 1.1843, Train Acc: 0.6028, Val Acc: 0.5976
+patience: 1/10
+Epoch 30/60: Train Loss: 1.1642, Val Loss: 1.1734, Train Acc: 0.6061, Val Acc: 0.6012
+model saved to: saved_models\cnn_gru_model_20250809_163418_best.pth
+New best Val Loss: 1.1734 (Val Acc: 0.6012)
+model saved to: saved_models\cnn_gru_model_20250809_163418_epoch_30.pth
+Epoch 31/60: Train Loss: 1.1603, Val Loss: 1.1752, Train Acc: 0.6071, Val Acc: 0.5965
+patience: 1/10
+Epoch 32/60: Train Loss: 1.1388, Val Loss: 1.1823, Train Acc: 0.6159, Val Acc: 0.6000
+patience: 2/10
+Epoch 33/60: Train Loss: 1.1538, Val Loss: 1.1825, Train Acc: 0.6102, Val Acc: 0.5988
+patience: 3/10
+Epoch 34/60: Train Loss: 1.1418, Val Loss: 1.1686, Train Acc: 0.6216, Val Acc: 0.6012
+patience: 4/10
+Epoch 35/60: Train Loss: 1.1412, Val Loss: 1.1651, Train Acc: 0.6145, Val Acc: 0.5953
+patience: 5/10
+Epoch 36/60: Train Loss: 1.1325, Val Loss: 1.1577, Train Acc: 0.6140, Val Acc: 0.6106
+model saved to: saved_models\cnn_gru_model_20250809_163418_best.pth
+New best Val Loss: 1.1577 (Val Acc: 0.6106)
+Epoch 37/60: Train Loss: 1.1416, Val Loss: 1.1700, Train Acc: 0.6149, Val Acc: 0.6059
+patience: 1/10
+Epoch 38/60: Train Loss: 1.1417, Val Loss: 1.1701, Train Acc: 0.6150, Val Acc: 0.6071
+patience: 2/10
+Epoch 39/60: Train Loss: 1.1320, Val Loss: 1.1685, Train Acc: 0.6218, Val Acc: 0.6000
+patience: 3/10
+Epoch 40/60: Train Loss: 1.1336, Val Loss: 1.1600, Train Acc: 0.6213, Val Acc: 0.6059
+patience: 4/10
+model saved to: saved_models\cnn_gru_model_20250809_163418_epoch_40.pth
+Epoch 41/60: Train Loss: 1.1303, Val Loss: 1.1606, Train Acc: 0.6196, Val Acc: 0.6071
+patience: 5/10
+Epoch 42/60: Train Loss: 1.1283, Val Loss: 1.1606, Train Acc: 0.6182, Val Acc: 0.6141
+patience: 6/10
+Epoch 43/60: Train Loss: 1.1260, Val Loss: 1.1716, Train Acc: 0.6179, Val Acc: 0.6035
+patience: 7/10
+Epoch 44/60: Train Loss: 1.1339, Val Loss: 1.1680, Train Acc: 0.6182, Val Acc: 0.6012
+patience: 8/10
+Epoch 45/60: Train Loss: 1.1200, Val Loss: 1.1604, Train Acc: 0.6221, Val Acc: 0.6106
+patience: 9/10
+Epoch 46/60: Train Loss: 1.1247, Val Loss: 1.1562, Train Acc: 0.6219, Val Acc: 0.6118
+patience: 10/10
+Early Stopped on Epoch 46
+Best Val Loss: 1.1577, Epoch: 36
+model saved to: saved_models\cnn_gru_model_20250809_163418_final.pth
+Training history saved: saved_models\cnn_gru_model_20250809_163418_history.json
+Training stop
+Best Val Acc: 0.6106
+Best Epoch: 36
+Best Model: saved_models\cnn_gru_model_20250809_163418_best.pth
+Evaluate on test set...
+model loaded from: saved_models\cnn_gru_model_20250809_163418_best.pth, timestamp: 2025-08-09T17:10:11.505827
+Test Acc: 0.6171
+               precision    recall  f1-score   support
+
+   Electronic       0.65      0.60      0.62       213
+ Experimental       0.42      0.28      0.33       213
+         Folk       0.60      0.71      0.65       213
+      Hip-Hop       0.64      0.72      0.68       212
+ Instrumental       0.67      0.68      0.68       212
+International       0.73      0.82      0.77       212
+          Pop       0.53      0.52      0.52       213
+         Rock       0.61      0.62      0.62       212
+
+     accuracy                           0.62      1700
+    macro avg       0.61      0.62      0.61      1700
+ weighted avg       0.61      0.62      0.61      1700
+
+Test Acc: 0.6171
