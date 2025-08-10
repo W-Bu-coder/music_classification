@@ -4,20 +4,19 @@ import torch
 import os
 import gc
 import glob
-import matplotlib.pyplot as plt
-import seaborn as sns
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 from sklearn.model_selection import train_test_split
+import time
 import random
-from sklearn.metrics import accuracy_score, classification_report
 import json
 from datetime import datetime
+import itertools
 
-def load_all_features(path):
+def load_all_features():
     print("loading feature files...")
 
-    feature_files = glob.glob(os.path.join(path, 'features_*.npz'))
+    feature_files = glob.glob(os.path.join(FEATURE_PATH, 'features_*.npz'))
     if not feature_files:
         print("fail to load")
         return None, None, None
@@ -82,9 +81,14 @@ def create_data_splits(features, labels, test_size=0.2, val_size=0.1, random_sta
     print(f"   Val : {len(X_val)} samples, ({len(X_val)/len(features)*100:.1f}%)")
     print(f"   Test: {len(X_test)} samples, ({len(X_test)/len(features)*100:.1f}%)")
 
+    # print("Label distribution: ")
+    # print(f"   Train: {np.bincount(y_train)}")
+    # print(f"   Val : {np.bincount(y_val)}")
+    # print(f"   Test: {np.bincount(y_test)}")
+    
     return X_train, X_val, X_test, y_train, y_val, y_test
 
-# data augmentation
+
 class AudioTransform:
     def __init__(self, noise_factor=0.005, time_shift_factor=0.1):
         self.noise_factor = noise_factor
@@ -203,48 +207,14 @@ class CNN_GRU_Hybrid(nn.Module):
         
         return output
 
-def save_model_checkpoint(model, optimizer, epoch, val_acc, loss, config, filepath):
-    checkpoint = {
-        'epoch': epoch,
-        'model_state_dict': model.state_dict(),
-        'optimizer_state_dict': optimizer.state_dict(),
-        'val_acc': val_acc,
-        'loss': loss,
-        'config': config,
-        'timestamp': datetime.now().isoformat()
-    }
-    torch.save(checkpoint, filepath)
-    print(f"model saved to: {filepath}")
-
-def load_model_checkpoint(filepath, model, optimizer=None):
-    checkpoint = torch.load(filepath)
-    model.load_state_dict(checkpoint['model_state_dict'])
-    
-    if optimizer is not None:
-        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-    
-    print(f"model loaded from: {filepath}, timestamp: {checkpoint['timestamp']}")
-
-    return checkpoint
-
-def train_and_evaluate(model, train_loader, val_loader, criterion, optimizer, scheduler,
-                      epochs=60, device='cuda', patience=10, min_delta=1e-4,
-                      save_dir='models', config=None):
-    # save model here
-    os.makedirs(save_dir, exist_ok=True)
-
-    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    model_name = f"cnn_gru_model_{timestamp}"
-    
-    # use val loss as early stopping metric
-    best_val_loss = float('inf')  
-    best_val_acc = 0.0  
+def train_and_evaluate(model, train_loader, val_loader, criterion, optimizer, 
+                      epochs=20, device='cuda', patience=8, min_delta=1e-4):
+    best_val_acc = 0.0
     best_epoch = 0
     patience_counter = 0
     early_stopped = False
-    
+
     train_losses = []
-    val_losses = []  
     val_accuracies = []
     
     for epoch in range(epochs):
@@ -275,155 +245,207 @@ def train_and_evaluate(model, train_loader, val_loader, criterion, optimizer, sc
             if batch_idx % 20 == 0:
                 torch.cuda.empty_cache()
         
-        avg_train_loss = total_loss / num_batches if num_batches > 0 else 0
+        avg_loss = total_loss / num_batches if num_batches > 0 else 0
         train_acc = train_correct / train_total if train_total > 0 else 0.0
-        train_losses.append(avg_train_loss)
+        train_losses.append(avg_loss)
         
         # validation
         model.eval()
         val_correct = 0
         val_total = 0
-        val_loss_total = 0
-        val_batches = 0
         
         with torch.no_grad():
             for batch_idx, (data, target) in enumerate(val_loader):
                 data, target = data.to(device), target.to(device)
                 output = model(data)
-
-                val_loss = criterion(output, target)
-                val_loss_total += val_loss.item()
-                val_batches += 1
-
                 _, predicted = torch.max(output.data, 1)
+                
                 val_total += target.size(0)
                 val_correct += (predicted == target).sum().item()
                 
-                del data, target, output, predicted, val_loss
+                del data, target, output, predicted
                 
                 if batch_idx % 15 == 0:
                     torch.cuda.empty_cache()
         
-        avg_val_loss = val_loss_total / val_batches if val_batches > 0 else float('inf')
         val_acc = val_correct / val_total if val_total > 0 else 0.0
-        
-        scheduler.step(val_acc)
-        
-        val_losses.append(avg_val_loss)  
         val_accuracies.append(val_acc)
         
-        print(f"Epoch {epoch+1}/{epochs}: Train Loss: {avg_train_loss:.4f}, Val Loss: {avg_val_loss:.4f}, Train Acc: {train_acc:.4f}, Val Acc: {val_acc:.4f}")
-
+        # early stopping
         if val_acc > best_val_acc + min_delta:
             best_val_acc = val_acc
             best_epoch = epoch + 1
             patience_counter = 0
-            best_model_path = os.path.join(save_dir, f"{model_name}_best.pth")
-            save_model_checkpoint(model, optimizer, epoch+1, val_acc, avg_val_loss, config, best_model_path)
-            
         else:
             patience_counter += 1
-            print(f"patience: {patience_counter}/{patience}")
             if patience_counter >= patience:
                 early_stopped = True
-                print(f"Early Stopped on Epoch {epoch+1}")
-                print(f"Best Val Loss: {best_val_loss:.4f}, Epoch: {best_epoch} ")
                 break
-            
-        # if avg_val_loss < best_val_loss - min_delta:
-        #     best_val_loss = avg_val_loss
-        #     best_val_acc = val_acc  
-        #     best_epoch = epoch + 1
-        #     patience_counter = 0
-
-        #     best_model_path = os.path.join(save_dir, f"{model_name}_best.pth")
-        #     save_model_checkpoint(model, optimizer, epoch+1, val_acc, avg_val_loss, config, best_model_path)
-        #     print(f"New best Val Loss: {avg_val_loss:.4f} (Val Acc: {val_acc:.4f})")
-            
-        # else:
-        #     patience_counter += 1
-        #     print(f"patience: {patience_counter}/{patience}")
-        #     if patience_counter >= patience:
-        #         early_stopped = True
-        #         break
-        
-        # regular save
-        if (epoch + 1) % 10 == 0:
-            checkpoint_path = os.path.join(save_dir, f"{model_name}_epoch_{epoch+1}.pth")
-            save_model_checkpoint(model, optimizer, epoch+1, val_acc, avg_val_loss, config, checkpoint_path)
 
         torch.cuda.empty_cache()
         gc.collect()
-
-    final_model_path = os.path.join(save_dir, f"{model_name}_final.pth")
-    save_model_checkpoint(model, optimizer, epoch+1, val_acc, avg_val_loss, config, final_model_path)
     
-    training_history = {
-        'train_losses': train_losses,
-        'val_losses': val_losses,  
-        'val_accuracies': val_accuracies,
-        'best_val_loss': best_val_loss,  
-        'best_val_acc': best_val_acc,
-        'best_epoch': best_epoch,
-        'best_model_path': best_model_path,
-        'config': config,
-        'model_name': model_name
-    }
-    
-    history_path = os.path.join(save_dir, f"{model_name}_history.json")
-    with open(history_path, 'w') as f:
-        json.dump(training_history, f, indent=2)
-    
-    print(f"Training history saved: {history_path}")
-
-    # return all parameters that may be needed
     return {
-        'best_val_loss': best_val_loss,
         'best_val_acc': best_val_acc,
         'best_epoch': best_epoch,
         'early_stopped': early_stopped,
         'total_epochs': epoch + 1,
         'final_train_acc': train_acc,
-        'final_val_loss': avg_val_loss,  
         'train_val_gap': abs(train_acc - best_val_acc),
         'train_losses': train_losses,
-        'val_losses': val_losses,  
-        'val_accuracies': val_accuracies,
-        'model_name': model_name,
-        'final_model_path': final_model_path
+        'val_accuracies': val_accuracies
+    }
+
+def run_grid_search(X_train, X_val, y_train, y_val, device='cuda'):
+
+    param_grid = {
+        'learning_rate': [5e-5, 1e-4, 3e-4, 1e-3],
+        'cnn_dropout': [0.3],
+        'classifier_dropout': [0.3],
+        'weight_decay': [1e-5],
     }
     
+    print(f"Search Space: {len(param_grid['learning_rate']) * len(param_grid['cnn_dropout']) * len(param_grid['classifier_dropout']) * len(param_grid['weight_decay'])} combinations")
     
-def evaluate_model(model, test_loader, device='cuda', class_names=None):
-    model.eval()
-    all_predictions = []
-    all_targets = []
+    # generate all combinations
+    param_combinations = list(itertools.product(
+        param_grid['learning_rate'],
+        param_grid['cnn_dropout'], 
+        param_grid['classifier_dropout'],
+        param_grid['weight_decay'],
+    ))
     
-    with torch.no_grad():
-        for data, target in test_loader:
-            data, target = data.to(device), target.to(device)
-            output = model(data)
-            _, predicted = torch.max(output, 1)
-            
-            all_predictions.extend(predicted.cpu().numpy())
-            all_targets.extend(target.cpu().numpy())
+    results = []
+    best_val_acc = 0.0
+    best_config = None
 
-    accuracy = accuracy_score(all_targets, all_predictions)
+    train_transform = AudioTransform()
+    train_dataset = MusicDataset(X_train, y_train, transform=train_transform)
+    val_dataset = MusicDataset(X_val, y_val, transform=None)
+    batch_sz = 16
     
-    # classification report
-    if class_names is None:
-        class_names = [f'Class_{i}' for i in range(8)]
+    for i, (lr, cnn_drop, cls_drop, wd) in enumerate(param_combinations):
+        print(f"\n{'='*60}")
+        print(f"{i+1}/{len(param_combinations)}")
+        print(f"Config: lr={lr}, cnn_dropout={cnn_drop}, cls_dropout={cls_drop}, weight_decay={wd}")
+        print(f"{'='*60}")
+
+        train_loader = DataLoader(train_dataset, batch_size=batch_sz, shuffle=True)
+        val_loader = DataLoader(val_dataset, batch_size=batch_sz, shuffle=False)
+
+        model = CNN_GRU_Hybrid(
+            num_classes=8,
+            cnn_dropout=cnn_drop,
+            classifier_dropout=cls_drop,
+            gru_hidden_size=32,
+            gru_num_layers=2
+        ).to(device)
+
+        param_count = sum(p.numel() for p in model.parameters() if p.requires_grad)
+
+        optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=wd)
+        criterion = nn.CrossEntropyLoss()
+
+        start_time = time.time()
+        try:
+            train_results = train_and_evaluate(
+                model, train_loader, val_loader, criterion, optimizer,
+                epochs= 30, device=device, patience=5
+            )
+            
+            training_time = time.time() - start_time
+
+            result = {
+                'experiment_id': i + 1,
+                'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                'hyperparameters': {
+                    'learning_rate': lr,
+                    'cnn_dropout': cnn_drop,
+                    'classifier_dropout': cls_drop,
+                    'weight_decay': wd,
+                    'batch_size': batch_sz,
+                    'gru_hidden_size': 32,
+                    'gru_num_layers': 2
+                },
+                'model_info': {
+                    'parameter_count': param_count,
+                    'model_size_mb': param_count * 4 / (1024 * 1024)
+                },
+                'training_results': train_results,
+                'training_time_seconds': training_time,
+                'training_time_minutes': training_time / 60
+            }
+            
+            results.append(result)
+
+            # update
+            if train_results['best_val_acc'] > best_val_acc:
+                best_val_acc = train_results['best_val_acc']
+                best_config = result
+
+            print(f"Best Val Acc: {train_results['best_val_acc']:.4f}")
+            print(f"Time: {training_time/60:.1f} mins")
+            print(f"Train Val Gap: {train_results['train_val_gap']:.4f}")
+            print(f"Epochs: {train_results['total_epochs']}")
+            
+        except Exception as e:
+            print(f"Training Failed: {str(e)}")
+            result = {
+                'experiment_id': i + 1,
+                'timestamp': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                'hyperparameters': {
+                    'learning_rate': lr,
+                    'cnn_dropout': cnn_drop,
+                    'classifier_dropout': cls_drop,
+                    'weight_decay': wd,
+                    'batch_size': batch_sz
+                },
+                'error': str(e),
+                'status': 'failed'
+            }
+            results.append(result)
+
+        del model, optimizer, criterion, train_loader, val_loader
+        torch.cuda.empty_cache()
+        gc.collect()
+
+    if best_config:
+        print(f"Best Config : {best_config['hyperparameters']}")
+        print(f"Best Val Acc: {best_val_acc:.4f}")
     
-    report = classification_report(all_targets, all_predictions, 
-                                 target_names=class_names, output_dict=True)
+    return results, best_config
+
+def save_results(results, filename='grid_search_results.json'):
+    with open(filename, 'w', encoding='utf-8') as f:
+        json.dump(results, f, indent=2, ensure_ascii=False)
+    print(f"Saved to: {filename}")
+
+def create_results_summary(results):
+    summary_data = []
     
-    print(f"Test Acc: {accuracy:.4f}")
-    print(classification_report(all_targets, all_predictions, target_names=class_names))
+    for result in results:
+        if 'error' not in result:
+            summary_data.append({
+                'experiment_id': result['experiment_id'],
+                'learning_rate': result['hyperparameters']['learning_rate'],
+                'cnn_dropout': result['hyperparameters']['cnn_dropout'],
+                'classifier_dropout': result['hyperparameters']['classifier_dropout'],
+                'weight_decay': result['hyperparameters']['weight_decay'],
+                'batch_size': result['hyperparameters']['batch_size'],
+                'best_val_acc': result['training_results']['best_val_acc'],
+                'train_val_gap': result['training_results']['train_val_gap'],
+                'early_stopped': result['training_results']['early_stopped'],
+                'total_epochs': result['training_results']['total_epochs'],
+                'training_time_min': result['training_time_minutes'],
+                'parameter_count': result['model_info']['parameter_count']
+            })
     
-    return accuracy, report, all_predictions, all_targets
+    df = pd.DataFrame(summary_data)
+    return df
+
 
 if __name__ == "__main__":
-    
+
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     DATA_DIR = "fma_metadata"  
@@ -436,84 +458,36 @@ if __name__ == "__main__":
 
     if features is not None:
         X_train, X_val, X_test, y_train, y_val, y_test = create_data_splits(features, labels)
-        
-        train_transform = AudioTransform()
-        train_dataset = MusicDataset(X_train, y_train, transform=train_transform)
-        val_dataset = MusicDataset(X_val, y_val, transform=None)
-        test_dataset = MusicDataset(X_test, y_test, transform=None)
 
-        train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True)
-        val_loader = DataLoader(val_dataset, batch_size=16, shuffle=False)
-        test_loader = DataLoader(test_dataset, batch_size=16, shuffle=False)
-        
-        config = {
-            'num_classes': 8,
-            'cnn_dropout': 0.2,
-            'classifier_dropout': 0.4,
-            'gru_hidden_size': 32,
-            'gru_num_layers': 2,
-            'learning_rate': 0.001,
-            'beta2': 0.999,
-            'weight_decay': 0.03,
-            'batch_size': 16,
-            'epochs': 60
-        }
+        results, best_config = run_grid_search(X_train, X_val, y_train, y_val, device)
 
-        model = CNN_GRU_Hybrid(
-            num_classes=8,
-            cnn_dropout=config['cnn_dropout'],
-            classifier_dropout=config['classifier_dropout'],
-            gru_hidden_size=32, # keep simple
-            gru_num_layers=2
-        ).to(device)
-        
-        optimizer = torch.optim.AdamW(
-            model.parameters(),
-            betas=(0.9, config['beta2']),
-            lr=config['learning_rate'],
-            weight_decay=config['weight_decay']
-        )
-        
-        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-            optimizer,
-            mode='max',
-            patience=5, 
-            min_lr=1e-6, 
-        )
-        
-        criterion = nn.CrossEntropyLoss()
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        results_filename = f'grid_search_results_{timestamp}.json'
+        save_results(results, results_filename)
 
-        print("Training start")
-        res = train_and_evaluate(
-            model, train_loader, val_loader, criterion, optimizer, scheduler,
-            epochs=60, config=config, save_dir='saved_models'
-        )
+        summary_df = create_results_summary(results)
+        summary_filename = f'grid_search_summary_{timestamp}.csv'
+        summary_df.to_csv(summary_filename, index=False)
+
+        # show summary
+        print(f"Summary")
+        print(f"Tested combinations: {len(summary_df)}")
+        print(f"Best Val Acc: {summary_df['best_val_acc'].max():.4f}")
+        print(f"Avg Val Acc : {summary_df['best_val_acc'].mean():.4f}")
         
-        print("Training stop")
-        print(f"Best Val Acc: {res['best_val_acc']:.4f}")
-        print(f"Best Epoch: {res['best_epoch']}")
-        print(f"Best Model: {res['best_model_path']}")
+        # show Top 3
+        print("Top 3:")
+        top3 = summary_df.nlargest(3, 'best_val_acc')
+        for i, (_, row) in enumerate(top3.iterrows()):
+            print(f"   #{i+1}: Val Acc={row['best_val_acc']:.4f}, "
+                  f"lr={row['learning_rate']}, "
+                  f"cnn_drop={row['cnn_dropout']}, "
+                  f"cls_drop={row['classifier_dropout']}, "
+                  f"wd={row['weight_decay']}, "
+                  f"batch_sz={row['batch_size']}")
 
-        print("Evaluate on test set...")
-        checkpoint = load_model_checkpoint(res['best_model_path'], model)
-
-        class_names = ['Electronic', 'Experimental', 'Folk', 'Hip-Hop', 
-                      'Instrumental', 'International', 'Pop', 'Rock']
-        
-        test_accuracy, test_report, predictions, targets = evaluate_model(
-            model, test_loader, device, class_names
-        )
-
-        print(f"Test Acc: {test_accuracy:.4f}")
-
-        final_results = {
-            'validation_accuracy': res['best_val_acc'],
-            'test_accuracy': test_accuracy,
-            'test_report': test_report,
-            'config': config,
-            'model_name': res['model_name']
-        }
-        
-        results_path = f"saved_models/{res['model_name']}_results.json"
-        with open(results_path, 'w') as f:
-            json.dump(final_results, f, indent=2)
+        if best_config:
+            best_config_filename = f'best_config_{timestamp}.json'
+            with open(best_config_filename, 'w', encoding='utf-8') as f:
+                json.dump(best_config, f, indent=2, ensure_ascii=False)
+            print(f"Best Config saved to: {best_config_filename}")
