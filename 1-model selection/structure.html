@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CNN-GRU Hybrid Architecture Visualization</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .title {
+            text-align: center;
+            font-size: 2.5em;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            text-align: center;
+            font-size: 1.2em;
+            color: #7f8c8d;
+            margin-bottom: 30px;
+        }
+        
+        .innovation-badge {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 8px 20px;
+            background: linear-gradient(135deg, #ff6b6b, #feca57);
+            color: white;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.9em;
+            margin: 0 5px;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        }
+        
+        .architecture {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 40px 0;
+        }
+        
+        .layer {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            min-width: 140px;
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .layer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+        
+        .layer:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+        
+        .conv-block {
+            border-left: 5px solid #3498db;
+        }
+        
+        .pool-block {
+            border-left: 5px solid #e74c3c;
+        }
+        
+        .gru-block {
+            border-left: 5px solid #f39c12;
+            background: linear-gradient(135deg, #fff9e6, #ffffff);
+        }
+        
+        .attention-block {
+            border-left: 5px solid #e67e22;
+            background: linear-gradient(135deg, #fdf2e9, #ffffff);
+        }
+        
+        .fc-block {
+            border-left: 5px solid #27ae60;
+        }
+        
+        .input-block {
+            border-left: 5px solid #9b59b6;
+        }
+        
+        .adaptive-block {
+            border-left: 5px solid #34495e;
+        }
+        
+        .fusion-block {
+            border-left: 5px solid #e91e63;
+            background: linear-gradient(135deg, #fce4ec, #ffffff);
+        }
+        
+        .layer-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        
+        .layer-details {
+            font-size: 0.85em;
+            color: #7f8c8d;
+            line-height: 1.4;
+        }
+        
+        .arrow {
+            font-size: 2em;
+            color: #bdc3c7;
+            margin: 0 10px;
+            transition: all 0.3s ease;
+            align-self: center;
+        }
+        
+        .arrow:hover {
+            color: #667eea;
+            transform: scale(1.2);
+        }
+        
+        .down-arrow {
+            transform: rotate(90deg);
+            margin: 10px 0;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+        
+        .stat-number {
+            font-size: 2.2em;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .stat-label {
+            font-size: 1em;
+            opacity: 0.9;
+        }
+        
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+        
+        .legend-text {
+            font-weight: 500;
+            color: #2c3e50;
+            font-size: 0.95em;
+        }
+        
+        .hybrid-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .parallel-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .section-divider {
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #bdc3c7, transparent);
+            margin: 30px 0;
+        }
+        
+        .section-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #34495e;
+            text-align: center;
+            margin: 20px 0 10px 0;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #ecf0f1, #ffffff);
+            border-radius: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .innovation-highlight {
+            background: linear-gradient(135deg, #fff3cd, #ffffff) !important;
+            border-left: 5px solid #ffc107 !important;
+        }
+        
+        @media (max-width: 768px) {
+            .architecture {
+                flex-direction: column;
+            }
+            .arrow {
+                transform: rotate(90deg);
+            }
+            .title {
+                font-size: 2em;
+            }
+            .parallel-section {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">CNN-GRU Hybrid Model</h1>
+        <p class="subtitle">Music Genre Classification • FMA Small Dataset • Advanced Temporal-Spatial Feature Learning</p>
+        
+        <div class="innovation-badge">
+            <span class="badge">🔬 Depthwise Separable Conv</span>
+            <span class="badge">🔄 Residual Connection</span>
+            <span class="badge">🎯 Attention Mechanism</span>
+            <span class="badge">🚪 Gated Fusion</span>
+        </div>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: #9b59b6;"></div>
+                <span class="legend-text">Input</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #3498db;"></div>
+                <span class="legend-text">CNN Layers</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #e74c3c;"></div>
+                <span class="legend-text">Pooling</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #f39c12;"></div>
+                <span class="legend-text">GRU</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #e67e22;"></div>
+                <span class="legend-text">Attention</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #e91e63;"></div>
+                <span class="legend-text">Fusion</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #27ae60;"></div>
+                <span class="legend-text">Classifier</span>
+            </div>
+        </div>
+        
+        <div class="architecture">
+            <!-- Input Layer -->
+            <div class="layer input-block">
+                <div class="layer-title">Input</div>
+                <div class="layer-details">
+                    Mel-Spectrogram<br>
+                    Shape: (1, H, W)<br>
+                    Single Channel<br>
+                    Time-Frequency Domain
+                </div>
+            </div>
+            
+            <div class="arrow">→</div>
+            
+            <!-- CNN Feature Extraction Section -->
+            <div class="section-title">🔍 CNN Feature Extraction</div>
+            
+            <div class="layer conv-block">
+                <div class="layer-title">Standard Conv</div>
+                <div class="layer-details">
+                    Conv2d (1→32)<br>
+                    3×3, padding=1<br>
+                    BatchNorm + ReLU<br>
+                    MaxPool2d (2×2)
+                </div>
+            </div>
+            
+            <div class="arrow">→</div>
+            
+            <div class="layer conv-block innovation-highlight">
+                <div class="layer-title">Depthwise Sep Conv 1</div>
+                <div class="layer-details">
+                    Depthwise (32→32)<br>
+                    3×3, groups=32<br>
+                    Pointwise (32→64)<br>
+                    BatchNorm + ReLU<br>
+                    MaxPool + Dropout(0.15)
+                </div>
+            </div>
+            
+            <div class="arrow">→</div>
+            
+            <div class="layer conv-block innovation-highlight">
+                <div class="layer-title">Depthwise Sep Conv 2</div>
+                <div class="layer-details">
+                    Depthwise (64→64)<br>
+                    3×3, groups=64<br>
+                    Pointwise (64→128)<br>
+                    BatchNorm + ReLU<br>
+                    MaxPool + Dropout(0.3)
+                </div>
+            </div>
+            
+            <div class="arrow">→</div>
+            
+            <div class="layer adaptive-block">
+                <div class="layer-title">Adaptive Pool</div>
+                <div class="layer-details">
+                    AdaptiveAvgPool2d<br>
+                    Output: (None, 1)<br>
+                    Preserves Time Dim<br>
+                    Global Freq Pooling
+                </div>
+            </div>
+            
+            <div class="section-divider"></div>
+            
+            <!-- Parallel Processing Section -->
+            <div class="section-title">🔄 Temporal Processing & Feature Fusion</div>
+            
+            <div class="hybrid-section">
+                <!-- GRU Branch -->
+                <div class="parallel-section">
+                    <div class="layer gru-block innovation-highlight">
+                        <div class="layer-title">GRU Processing</div>
+                        <div class="layer-details">
+                            Input: 128 features<br>
+                            Hidden: 32 units<br>
+                            Layers: 2<br>
+                            Bidirectional: False<br>
+                            Batch First: True
+                        </div>
+                    </div>
+                    
+                    <div class="arrow">+</div>
+                    
+                    <div class="layer fusion-block innovation-highlight">
+                        <div class="layer-title">Residual Connection</div>
+                        <div class="layer-details">
+                            Linear Projection<br>
+                            128 → 32<br>
+                            Element-wise Add<br>
+                            Skip Connection
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="arrow down-arrow">→</div>
+                
+                <!-- Attention Mechanism -->
+                <div class="layer attention-block innovation-highlight">
+                    <div class="layer-title">Attention Mechanism</div>
+                    <div class="layer-details">
+                        Linear (32→16)<br>
+                        Tanh Activation<br>
+                        Linear (16→1)<br>
+                        Softmax Weights<br>
+                        Weighted Sum
+                    </div>
+                </div>
+                
+                <div class="arrow down-arrow">→</div>
+                
+                <!-- Final Classification -->
+                <div class="layer fc-block">
+                    <div class="layer-title">Classifier</div>
+                    <div class="layer-details">
+                        Dropout (0.3)<br>
+                        Linear (32→8)<br>
+                        8 Genre Classes<br>
+                        Softmax Output
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number">2</div>
+                <div class="stat-label">GRU Layers</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">32</div>
+                <div class="stat-label">GRU Hidden Size</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">128</div>
+                <div class="stat-label">CNN Features</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">8</div>
+                <div class="stat-label">Output Classes</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">3</div>
+                <div class="stat-label">Innovation Features</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">~50K</div>
+                <div class="stat-label">Est. Parameters</div>
+            </div>
+        </div>
+        
+        <!-- Architecture Advantages Section -->
+        <div style="margin-top: 40px; padding: 30px; background: linear-gradient(135deg, #f8f9fa, #ffffff); border-radius: 15px; border-left: 5px solid #17a2b8;">
+            <h3 style="color: #2c3e50; margin-bottom: 20px; text-align: center;">🚀 Model Innovations & Advantages</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                <div>
+                    <strong style="color: #3498db;">Depthwise Separable Convolution:</strong><br>
+                    <span style="color: #7f8c8d;">Reduces parameters by ~9x while maintaining feature extraction capability</span>
+                </div>
+                <div>
+                    <strong style="color: #f39c12;">Temporal Modeling:</strong><br>
+                    <span style="color: #7f8c8d;">GRU captures sequential patterns in music spectrograms</span>
+                </div>
+                <div>
+                    <strong style="color: #e67e22;">Attention Mechanism:</strong><br>
+                    <span style="color: #7f8c8d;">Focuses on most relevant temporal segments for classification</span>
+                </div>
+                <div>
+                    <strong style="color: #e91e63;">Residual Connection:</strong><br>
+                    <span style="color: #7f8c8d;">Preserves CNN features while adding temporal information</span>
+                </div>
+                <div>
+                    <strong style="color: #27ae60;">Memory Efficient:</strong><br>
+                    <span style="color: #7f8c8d;">Single-direction GRU with optimized architecture for mobile deployment</span>
+                </div>
+                <div>
+                    <strong style="color: #9b59b6;">Early Stopping:</strong><br>
+                    <span style="color: #7f8c8d;">Intelligent training with patience=8 prevents overfitting</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,102 @@
+Simple CNN
+Number of parameters: 101,896
+Epoch 1/20: Val Acc: 0.4059
+Epoch 2/20: Val Acc: 0.2918
+Epoch 3/20: Val Acc: 0.3635
+Epoch 4/20: Val Acc: 0.3000
+Epoch 5/20: Val Acc: 0.3671
+Epoch 6/20: Val Acc: 0.3976
+Epoch 7/20: Val Acc: 0.3271
+Epoch 8/20: Val Acc: 0.3588
+Epoch 9/20: Val Acc: 0.4976
+Epoch 10/20: Val Acc: 0.2929
+Epoch 11/20: Val Acc: 0.5353
+Epoch 12/20: Val Acc: 0.4106
+Epoch 13/20: Val Acc: 0.2741
+Epoch 14/20: Val Acc: 0.4388
+Epoch 15/20: Val Acc: 0.4176
+Epoch 16/20: Val Acc: 0.4118
+Epoch 17/20: Val Acc: 0.4859
+Epoch 18/20: Val Acc: 0.2671
+Epoch 19/20: Val Acc: 0.3565
+Epoch 20/20: Val Acc: 0.5376
+Time cost: 675.9s
+Best Val Acc: 0.5376
+
+
+Efficient CNN
+Number of parameters: 16,456
+Epoch 1/20: Loss: 1.8794, Val Acc: 0.3200
+Epoch 2/20: Loss: 1.7533, Val Acc: 0.4000
+Epoch 3/20: Loss: 1.7127, Val Acc: 0.4082
+Epoch 4/20: Loss: 1.6593, Val Acc: 0.4188
+Epoch 5/20: Loss: 1.6324, Val Acc: 0.4565
+Epoch 6/20: Loss: 1.5932, Val Acc: 0.4365
+Epoch 7/20: Loss: 1.5892, Val Acc: 0.4647
+Epoch 8/20: Loss: 1.5515, Val Acc: 0.4812
+Epoch 9/20: Loss: 1.5434, Val Acc: 0.4435
+Epoch 10/20: Loss: 1.5283, Val Acc: 0.4859
+Epoch 11/20: Loss: 1.5218, Val Acc: 0.5059
+Epoch 12/20: Loss: 1.5048, Val Acc: 0.4988
+Epoch 13/20: Loss: 1.4926, Val Acc: 0.4871
+Epoch 14/20: Loss: 1.4895, Val Acc: 0.5188
+Epoch 15/20: Loss: 1.4835, Val Acc: 0.5224
+Epoch 16/20: Loss: 1.4718, Val Acc: 0.5165
+Epoch 17/20: Loss: 1.4521, Val Acc: 0.5047
+Epoch 18/20: Loss: 1.4488, Val Acc: 0.5047
+Epoch 19/20: Loss: 1.4502, Val Acc: 0.5400
+Epoch 20/20: Loss: 1.4404, Val Acc: 0.5424
+Time cost: 619.9s
+Best Val Acc: 0.5753
+
+
+CNN-LSTM Hybrid
+Number of parameters: 46,346
+Epoch 1/20: Loss: 1.8443, Val Acc: 0.3800
+Epoch 2/20: Loss: 1.7173, Val Acc: 0.3953
+Epoch 3/20: Loss: 1.6537, Val Acc: 0.4365
+Epoch 4/20: Loss: 1.5944, Val Acc: 0.4129
+Epoch 5/20: Loss: 1.5515, Val Acc: 0.4776
+Epoch 6/20: Loss: 1.5284, Val Acc: 0.4682
+Epoch 7/20: Loss: 1.4992, Val Acc: 0.4976
+Epoch 8/20: Loss: 1.4711, Val Acc: 0.4824
+Epoch 9/20: Loss: 1.4577, Val Acc: 0.4871
+Epoch 10/20: Loss: 1.4365, Val Acc: 0.4871
+Epoch 11/20: Loss: 1.4299, Val Acc: 0.5318
+Epoch 12/20: Loss: 1.4190, Val Acc: 0.5376
+Epoch 13/20: Loss: 1.4023, Val Acc: 0.4671
+Epoch 14/20: Loss: 1.3839, Val Acc: 0.4965
+Epoch 15/20: Loss: 1.3673, Val Acc: 0.5459
+Epoch 16/20: Loss: 1.3733, Val Acc: 0.5506
+Epoch 17/20: Loss: 1.3675, Val Acc: 0.5329
+Epoch 18/20: Loss: 1.3446, Val Acc: 0.5565
+Epoch 19/20: Loss: 1.3373, Val Acc: 0.5471
+Epoch 20/20: Loss: 1.3109, Val Acc: 0.5271
+Time cost:  775.330747127533
+Best Val Acc: 0.5506
+
+
+CNN-GRU Hybrid
+Number of parameters: 39,050
+Epoch 1/20: Loss: 1.8629, Val Acc: 0.3965
+Epoch 2/20: Loss: 1.7037, Val Acc: 0.4200
+Epoch 3/20: Loss: 1.6291, Val Acc: 0.4494
+Epoch 4/20: Loss: 1.5724, Val Acc: 0.4894
+Epoch 5/20: Loss: 1.5234, Val Acc: 0.4400
+Epoch 6/20: Loss: 1.4661, Val Acc: 0.4741
+Epoch 7/20: Loss: 1.4435, Val Acc: 0.4941
+Epoch 8/20: Loss: 1.4275, Val Acc: 0.5200
+Epoch 9/20: Loss: 1.4012, Val Acc: 0.4988
+Epoch 10/20: Loss: 1.3771, Val Acc: 0.5624
+Epoch 11/20: Loss: 1.3627, Val Acc: 0.4706
+Epoch 12/20: Loss: 1.3522, Val Acc: 0.5388
+Epoch 13/20: Loss: 1.3283, Val Acc: 0.5282
+Epoch 14/20: Loss: 1.3170, Val Acc: 0.5318
+Epoch 15/20: Loss: 1.3042, Val Acc: 0.5388
+Epoch 16/20: Loss: 1.2986, Val Acc: 0.5518
+Epoch 17/20: Loss: 1.2808, Val Acc: 0.5188
+Epoch 18/20: Loss: 1.2867, Val Acc: 0.5247
+Epoch 19/20: Loss: 1.2717, Val Acc: 0.5635
+Epoch 20/20: Loss: 1.2515, Val Acc: 0.5529
+Time cost:  756.8714907169342
+Best Val Acc: 0.5635
