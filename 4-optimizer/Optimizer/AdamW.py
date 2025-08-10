@@ -4,15 +4,13 @@ import torch
 import os
 import gc
 import glob
-import matplotlib.pyplot as plt
-import seaborn as sns
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 from sklearn.model_selection import train_test_split
 import random
-from sklearn.metrics import accuracy_score, classification_report
 import json
 from datetime import datetime
+
 
 def load_all_features(path):
     print("loading feature files...")
@@ -217,19 +215,9 @@ def save_model_checkpoint(model, optimizer, epoch, val_acc, loss, config, filepa
     torch.save(checkpoint, filepath)
     print(f"model saved to: {filepath}")
 
-def load_model_checkpoint(filepath, model, optimizer=None):
-    checkpoint = torch.load(filepath)
-    model.load_state_dict(checkpoint['model_state_dict'])
-    
-    if optimizer is not None:
-        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-    
-    print(f"model loaded from: {filepath}, timestamp: {checkpoint['timestamp']}")
 
-    return checkpoint
-
-def train_and_evaluate(model, train_loader, val_loader, criterion, optimizer, scheduler,
-                      epochs=60, device='cuda', patience=10, min_delta=1e-4,
+def train_and_evaluate(model, train_loader, val_loader, criterion, optimizer, 
+                      epochs=60, device='cuda', patience=8, min_delta=0.01,
                       save_dir='models', config=None):
     # save model here
     os.makedirs(save_dir, exist_ok=True)
@@ -237,13 +225,13 @@ def train_and_evaluate(model, train_loader, val_loader, criterion, optimizer, sc
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     model_name = f"cnn_gru_model_{timestamp}"
     
-    # use val acc as early stopping metric
+    # use val loss as early stopping metric
     best_val_loss = float('inf')  
     best_val_acc = 0.0  
     best_epoch = 0
     patience_counter = 0
     early_stopped = False
-    
+
     train_losses = []
     val_losses = []  
     val_accuracies = []
@@ -279,7 +267,7 @@ def train_and_evaluate(model, train_loader, val_loader, criterion, optimizer, sc
         avg_train_loss = total_loss / num_batches if num_batches > 0 else 0
         train_acc = train_correct / train_total if train_total > 0 else 0.0
         train_losses.append(avg_train_loss)
-        
+
         # validation
         model.eval()
         val_correct = 0
@@ -308,21 +296,20 @@ def train_and_evaluate(model, train_loader, val_loader, criterion, optimizer, sc
         avg_val_loss = val_loss_total / val_batches if val_batches > 0 else float('inf')
         val_acc = val_correct / val_total if val_total > 0 else 0.0
         
-        scheduler.step(val_acc)
-        
-        val_losses.append(avg_val_loss)  
+        val_losses.append(avg_val_loss)
         val_accuracies.append(val_acc)
         
-        print(f"Epoch {epoch+1}/{epochs}: Train Loss: {avg_train_loss:.4f}, Val Loss: {avg_val_loss:.4f}, Train Acc: {train_acc:.4f}, Val Acc: {val_acc:.4f}")
+        print(f"Epoch {epoch+1}/{epochs} - Train Loss: {avg_train_loss:.4f}, Val Loss: {avg_val_loss:.4f}, Train Acc: {train_acc:.4f}, Val Acc: {val_acc:.4f}")
 
-        if val_acc > best_val_acc + min_delta:
+        if avg_val_loss < best_val_loss - min_delta:
+            best_val_loss = avg_val_loss
             best_val_acc = val_acc
             best_epoch = epoch + 1
             patience_counter = 0
-            
+
             best_model_path = os.path.join(save_dir, f"{model_name}_best.pth")
             save_model_checkpoint(model, optimizer, epoch+1, val_acc, avg_val_loss, config, best_model_path)
-            
+
         else:
             patience_counter += 1
             print(f"patience: {patience_counter}/{patience}")
@@ -331,24 +318,7 @@ def train_and_evaluate(model, train_loader, val_loader, criterion, optimizer, sc
                 print(f"Early Stopped at Epoch {epoch+1}")
                 print(f"Best Val Loss: {best_val_loss:.4f}, Epoch: {best_epoch} ")
                 break
-            
-        # if avg_val_loss < best_val_loss - min_delta:
-        #     best_val_loss = avg_val_loss
-        #     best_val_acc = val_acc  
-        #     best_epoch = epoch + 1
-        #     patience_counter = 0
 
-        #     best_model_path = os.path.join(save_dir, f"{model_name}_best.pth")
-        #     save_model_checkpoint(model, optimizer, epoch+1, val_acc, avg_val_loss, config, best_model_path)
-        #     print(f"New best Val Loss: {avg_val_loss:.4f} (Val Acc: {val_acc:.4f})")
-            
-        # else:
-        #     patience_counter += 1
-        #     print(f"patience: {patience_counter}/{patience}")
-        #     if patience_counter >= patience:
-        #         early_stopped = True
-        #         break
-        
         # regular save
         if (epoch + 1) % 10 == 0:
             checkpoint_path = os.path.join(save_dir, f"{model_name}_epoch_{epoch+1}.pth")
@@ -359,15 +329,14 @@ def train_and_evaluate(model, train_loader, val_loader, criterion, optimizer, sc
 
     final_model_path = os.path.join(save_dir, f"{model_name}_final.pth")
     save_model_checkpoint(model, optimizer, epoch+1, val_acc, avg_val_loss, config, final_model_path)
-    
+
     training_history = {
         'train_losses': train_losses,
-        'val_losses': val_losses,  
+        'val_losses': val_losses,
         'val_accuracies': val_accuracies,
-        'best_val_loss': best_val_loss,  
+        'best_val_loss': best_val_loss,
         'best_val_acc': best_val_acc,
         'best_epoch': best_epoch,
-        'best_model_path': best_model_path,
         'config': config,
         'model_name': model_name
     }
@@ -378,7 +347,6 @@ def train_and_evaluate(model, train_loader, val_loader, criterion, optimizer, sc
     
     print(f"Training history saved: {history_path}")
 
-    # return all parameters that may be needed
     return {
         'best_val_loss': best_val_loss,
         'best_val_acc': best_val_acc,
@@ -386,48 +354,22 @@ def train_and_evaluate(model, train_loader, val_loader, criterion, optimizer, sc
         'early_stopped': early_stopped,
         'total_epochs': epoch + 1,
         'final_train_acc': train_acc,
-        'final_val_loss': avg_val_loss,  
+        'final_val_loss': avg_val_loss,
         'train_val_gap': abs(train_acc - best_val_acc),
         'train_losses': train_losses,
-        'val_losses': val_losses,  
+        'val_losses': val_losses,
         'val_accuracies': val_accuracies,
         'model_name': model_name,
+        'best_model_path': best_model_path,
         'final_model_path': final_model_path
     }
     
     
-def evaluate_model(model, test_loader, device='cuda', class_names=None):
-    model.eval()
-    all_predictions = []
-    all_targets = []
-    
-    with torch.no_grad():
-        for data, target in test_loader:
-            data, target = data.to(device), target.to(device)
-            output = model(data)
-            _, predicted = torch.max(output, 1)
-            
-            all_predictions.extend(predicted.cpu().numpy())
-            all_targets.extend(target.cpu().numpy())
-
-    accuracy = accuracy_score(all_targets, all_predictions)
-    
-    # classification report
-    if class_names is None:
-        class_names = [f'Class_{i}' for i in range(8)]
-    
-    report = classification_report(all_targets, all_predictions, 
-                                 target_names=class_names, output_dict=True)
-    
-    print(f"Test Acc: {accuracy:.4f}")
-    print(classification_report(all_targets, all_predictions, target_names=class_names))
-    
-    return accuracy, report, all_predictions, all_targets
 
 if __name__ == "__main__":
     
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
+    
     DATA_DIR = "fma_metadata"  
     AUDIO_DIR = "fma_small"   
     FEATURE_PATH = 'features'
@@ -446,13 +388,11 @@ if __name__ == "__main__":
         
         config = {
             'num_classes': 8,
-            'cnn_dropout': 0.2,
-            'classifier_dropout': 0.4,
+            'cnn_dropout': 0.3,
+            'classifier_dropout': 0.3,
             'gru_hidden_size': 32,
             'gru_num_layers': 2,
-            'learning_rate': 0.001,
-            'beta2': 0.999,
-            'weight_decay': 0.03,
+            'learning rate': 0.001,
             'batch_size': 16,
             'epochs': 60
         }
@@ -460,62 +400,29 @@ if __name__ == "__main__":
         train_loader = DataLoader(train_dataset, batch_size=config['batch_size'], shuffle=True)
         val_loader = DataLoader(val_dataset, batch_size=config['batch_size'], shuffle=False)
         test_loader = DataLoader(test_dataset, batch_size=config['batch_size'], shuffle=False)
-        
 
         model = CNN_GRU_Hybrid(
             num_classes=8,
             cnn_dropout=config['cnn_dropout'],
             classifier_dropout=config['classifier_dropout'],
-            gru_hidden_size=32, # keep simple
+            gru_hidden_size=32,
             gru_num_layers=2
         ).to(device)
         
-        optimizer = torch.optim.AdamW(
-            model.parameters(),
-            betas=(0.9, config['beta2']),
-            lr=config['learning_rate'],
-            weight_decay=config['weight_decay']
-        )
+        # optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=wd)
         
-        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-            optimizer,
-            mode='max',
-            patience=5, 
-            min_lr=1e-6, 
-        )
+        optimizer = torch.optim.AdamW(model.parameters(), lr=config['learning_rate'])
         
         criterion = nn.CrossEntropyLoss()
 
+        
         print("\nTraining start\n")
         res = train_and_evaluate(
-            model, train_loader, val_loader, criterion, optimizer, scheduler,
+            model, train_loader, val_loader, criterion, optimizer, 
             epochs=60, config=config, save_dir='saved_models'
         )
 
         print(f"Best Val Acc: {res['best_val_acc']:.4f}")
         print(f"Best Epoch: {res['best_epoch']}")
         print(f"Best Model: {res['best_model_path']}")
-
-        print("\nEvaluate on test set...")
-        checkpoint = load_model_checkpoint(res['best_model_path'], model)
-
-        class_names = ['Electronic', 'Experimental', 'Folk', 'Hip-Hop', 
-                      'Instrumental', 'International', 'Pop', 'Rock']
         
-        test_accuracy, test_report, predictions, targets = evaluate_model(
-            model, test_loader, device, class_names
-        )
-
-        print(f"Test Acc: {test_accuracy:.4f}")
-
-        final_results = {
-            'validation_accuracy': res['best_val_acc'],
-            'test_accuracy': test_accuracy,
-            'test_report': test_report,
-            'config': config,
-            'model_name': res['model_name']
-        }
-        
-        results_path = f"saved_models/{res['model_name']}_results.json"
-        with open(results_path, 'w') as f:
-            json.dump(final_results, f, indent=2)

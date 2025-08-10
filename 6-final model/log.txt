@@ -5,7 +5,9 @@ creating datasets
    Train: 5946 samples, (70.0%)
    Val : 850 samples, (10.0%)
    Test: 1700 samples, (20.0%)
+
 Training start
+
 Epoch 1/60: Train Loss: 1.8457, Val Loss: 1.6730, Train Acc: 0.2947, Val Acc: 0.3871
 model saved to: saved_models\cnn_gru_model_20250809_163418_best.pth
 New best Val Loss: 1.6730 (Val Acc: 0.3871)
@@ -117,7 +119,7 @@ Epoch 45/60: Train Loss: 1.1200, Val Loss: 1.1604, Train Acc: 0.6221, Val Acc: 0
 patience: 9/10
 Epoch 46/60: Train Loss: 1.1247, Val Loss: 1.1562, Train Acc: 0.6219, Val Acc: 0.6118
 patience: 10/10
-Early Stopped on Epoch 46
+Early Stopped at Epoch 46
 Best Val Loss: 1.1577, Epoch: 36
 model saved to: saved_models\cnn_gru_model_20250809_163418_final.pth
 Training history saved: saved_models\cnn_gru_model_20250809_163418_history.json
@@ -125,6 +127,7 @@ Training stop
 Best Val Acc: 0.6106
 Best Epoch: 36
 Best Model: saved_models\cnn_gru_model_20250809_163418_best.pth
+
 Evaluate on test set...
 model loaded from: saved_models\cnn_gru_model_20250809_163418_best.pth, timestamp: 2025-08-09T17:10:11.505827
 Test Acc: 0.6171
