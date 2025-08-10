@@ -1,0 +1,25 @@
+Scanning fma directory: fma_small
+7999 audio file detected
+csv: 106574 songs
+after cleaning: 49598 songs
+Available songs: 7996
+Number of genres: 8
+Number of songs: 7996
+    1. Hip-Hop        : 1000 ( 12.5%)
+    2. Pop            : 1000 ( 12.5%)
+    3. Folk           : 1000 ( 12.5%)
+    4. International  : 1000 ( 12.5%)
+    5. Instrumental   : 1000 ( 12.5%)
+    6. Experimental   :  999 ( 12.5%)
+    7. Rock           :  999 ( 12.5%)
+    8. Electronic     :  998 ( 12.5%)
+Batch extraction start
+0: International (ID: 2)
+1: Pop (ID: 10)
+2: Rock (ID: 12)
+3: Electronic (ID: 15)
+4: Folk (ID: 17)
+5: Hip-Hop (ID: 21)
+6: Experimental (ID: 38)
+feature extraction: 100%|████████████████████████████████████████████████████████████| 100/100 [00:08<00:00, 11.15it/s]
+Succeeded - 100; Failed: 0
