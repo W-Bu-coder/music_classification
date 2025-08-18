@@ -19,3 +19,7 @@ Basically, we processed following steps:
 
 Final Performance:
 Best Val Acc: 61.06%​, Test Acc: 61.71%​.
+
+After that, we tried different features (MFCC and MFCG) and class-specified data augmentation strategies, with a strong augmentation, the model achieved better performance.
+
+Best Val Acc: 62.71%​, Test Acc: 63.65%​.
